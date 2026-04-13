@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WSC Coach Time Off Request</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Shared CSS inlined -->
+  <style>
+  :root {
+    --primary: #0d1b2a;
+    --primary-hover: #110c09;
+    --primary-subtle: #e8e0d3;
+    --accent: #4cabfd;
+    --accent-subtle: #eff8ff;
+    --bg: #e8e0d3;
+    --card: #faf9f5;
+    --text: #0e0a07;
+    --text-secondary: #4b4038;
+    --text-muted: #84786f;
+    --border: #ded6c9;
+    --border-light: #e8e0d3;
+    --danger: #ef4444;
+    --danger-subtle: #fef0f0;
+    --danger-hover: #dc2626;
+    --warning: #e17055;
+    --warning-bg: #fef9f0;
+    --warning-border: #fde8c8;
+    --warning-text: #915a1c;
+    --info: #4cabfd;
+    --info-bg: #eff8ff;
+    --info-border: #bee3f8;
+    --success: #16a34a;
+    --success-bg: #f0fdf8;
+    --success-border: #a7f3d0;
+    --radius: 2px;
+    --radius-lg: 2px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    --transition: 0.2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55; min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    background: #0a0704; color: white; padding: 0 24px; height: 56px;
+    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+  .header-logo { height: 30px; width: auto; flex-shrink: 0; }
+  .header-logo img { height: 100%; width: auto; display: block; }
+  .header-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.2); flex-shrink: 0; }
+  .header h1 { font-size: 16px; font-weight: 400; letter-spacing: -0.02em; opacity: 0.85; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .header-link {
+    color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none;
+    padding: 4px 10px; border-radius: 2px; transition: 0.2s ease;
+  }
+  .header-link:hover { color: white; background: rgba(255,255,255,0.12); }
+  .container { max-width: 640px; margin: 0 auto; padding: 24px 16px 40px; }
+  .container--wide { max-width: 880px; }
+  .card {
+    background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light); padding: 24px; margin-bottom: 16px;
+  }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .card-icon {
+    width: 32px; height: 32px; border-radius: 2px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .card-title { font-size: 15px; font-weight: 650; color: var(--text); letter-spacing: -0.01em; }
+  .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  label { display: block; font-weight: 550; font-size: 13px; margin-bottom: 5px; color: var(--text-secondary); }
+  .required::after { content: ' *'; color: var(--danger); font-weight: 400; }
+  input[type="text"], input[type="email"], input[type="date"], textarea, select {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 2px;
+    font-size: 15px; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: white; color: var(--text); -webkit-appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%234b4038' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 34px;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(76,171,253,0.15); }
+  input[readonly] { background: var(--bg); color: var(--text-muted); border-style: dashed; }
+  textarea { resize: vertical; min-height: 44px; }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .field-row { display: flex; gap: 12px; }
+  .field-row > .field { flex: 1; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 18px; border: none; border-radius: 2px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; font-family: inherit; line-height: 1.3; white-space: nowrap;
+  }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: 0 2px 8px rgba(13,27,42,0.25); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--text-muted); background: var(--bg); }
+  .btn-approve { background: var(--success); color: white; }
+  .btn-approve:hover:not(:disabled) { background: #15803d; box-shadow: 0 2px 8px rgba(22,163,74,0.3); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 2px; }
+  .btn-lg { padding: 14px 24px; font-size: 15px; border-radius: 2px; }
+  .btn-block { width: 100%; }
+  .alert {
+    padding: 12px 14px; border-radius: 2px; font-size: 13px; line-height: 1.45;
+    display: none; align-items: flex-start; gap: 8px;
+  }
+  .alert.visible { display: flex; }
+  .alert-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+  .alert-warning { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); }
+  .alert-info { background: var(--info-bg); border: 1px solid var(--info-border); color: #1a5276; }
+  .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--primary); }
+  .alert-danger { background: var(--danger-subtle); border: 1px solid #fecaca; color: #7f1d1d; }
+  .duration-chip { display: none; align-items: center; gap: 4px; background: var(--accent-subtle); color: #0d4b82; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 2px; margin-top: 8px; }
+  .duration-chip.visible { display: inline-flex; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15,15,25,0.45); backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .overlay.visible { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: white; border-radius: var(--radius-lg); padding: 28px; max-width: 440px;
+    width: calc(100% - 32px); box-shadow: var(--shadow-lg); transform: translateY(8px); transition: transform 0.2s ease;
+  }
+  .overlay.visible .modal { transform: translateY(0); }
+  .modal-title { font-size: 17px; font-weight: 650; margin-bottom: 6px; }
+  .modal-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast { background: var(--text); color: white; padding: 12px 18px; border-radius: 2px; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); pointer-events: auto; animation: toastIn 0.3s ease; max-width: 360px; }
+  .toast-success { background: var(--primary); }
+  .toast-error { background: var(--danger); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .text-muted { color: var(--text-muted); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-sm { font-size: 13px; }
+  .text-xs { font-size: 12px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-4 { margin-top: 16px; }
+  .mb-2 { margin-bottom: 8px; }
+  .mb-4 { margin-bottom: 16px; }
+  @media (max-width: 540px) {
+    .header { padding: 0 14px; } .header h1 { font-size: 15px; }
+    .container { padding: 16px 12px 32px; } .card { padding: 18px 16px; }
+    .field-row { flex-direction: column; gap: 0; } .modal { padding: 22px 18px; }
+    .toast-container { left: 12px; right: 12px; bottom: 12px; } .toast { max-width: 100%; }
+  }
+  </style>
+
+  <!-- CoachForm-specific CSS -->
+  <style>
+    .steps { display: flex; gap: 4px; margin-bottom: 24px; }
+    .step-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.4s ease; }
+    .step-bar.active { background: var(--primary); }
+    .step-bar.done { background: var(--accent); }
+    .policy-callout {
+      display: flex; gap: 10px; align-items: flex-start; background: var(--accent-subtle);
+      border: 1px solid #ece0bf; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
+      font-size: 13px; color: #6b5820; line-height: 1.5;
+    }
+    .policy-callout-icon { flex-shrink: 0; font-size: 18px; margin-top: -1px; }
+    .policy-callout summary { cursor: pointer; font-weight: 600; color: #5a4a18; }
+    .policy-callout summary::-webkit-details-marker { display: none; }
+    .policy-callout summary::before {
+      content: ''; display: inline-block; width: 0; height: 0;
+      border-left: 5px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+      margin-right: 6px; transition: transform 0.15s ease;
+    }
+    .policy-callout details[open] > summary::before { transform: rotate(90deg); }
+    .policy-callout ul { margin: 8px 0 0 18px; font-weight: 400; color: #7a6830; }
+    .policy-callout li { margin-bottom: 3px; }
+    .class-block {
+      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; position: relative; transition: border-color 0.2s ease;
+    }
+    .class-block:focus-within { border-color: var(--primary); }
+    .class-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .class-block-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .class-remove {
+      background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;
+      padding: 2px 6px; border-radius: 2px; line-height: 1; transition: 0.2s ease;
+    }
+    .class-remove:hover { background: var(--danger-subtle); color: var(--danger); }
+    .add-class-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+      padding: 12px; border: 2px dashed var(--border); border-radius: var(--radius);
+      background: transparent; color: var(--text-secondary); font-size: 14px; font-weight: 550;
+      cursor: pointer; transition: 0.2s ease; font-family: inherit;
+    }
+    .add-class-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-subtle); }
+    .add-class-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .add-class-btn:disabled:hover { border-color: var(--border); color: var(--text-secondary); background: transparent; }
+    .result-page { display: none; text-align: center; padding: 16px 0; }
+    .result-page.visible { display: block; }
+    .result-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; }
+    .result-icon-success { background: var(--success-bg); color: var(--success); border: 2px solid var(--success-border); }
+    .result-icon-denied { background: var(--danger-subtle); color: var(--danger); border: 2px solid #fecaca; }
+    .result-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .result-desc { font-size: 14px; color: var(--text-secondary); max-width: 400px; margin: 0 auto 20px; }
+    .result-summary { text-align: left; background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+    .result-summary dt { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-top: 10px; }
+    .result-summary dt:first-child { margin-top: 0; }
+    .result-summary dd { font-size: 14px; color: var(--text); margin: 2px 0 0 0; }
+    .submit-area { position: sticky; bottom: 0; background: linear-gradient(to top, var(--bg) 60%, transparent); padding: 20px 0 8px; margin-top: 8px; }
+
+    /* Nav bar for preview */
+    .preview-nav {
+      display: flex; gap: 8px; justify-content: center; padding: 10px;
+      background: #2c2c3a; font-size: 13px;
+    }
+    .preview-nav a {
+      color: rgba(255,255,255,0.7); text-decoration: none; padding: 4px 12px;
+      border-radius: 2px; transition: 0.2s;
+    }
+    .preview-nav a:hover, .preview-nav a.active { color: white; background: rgba(255,255,255,0.12); }
+  </style>
+</head>
+<body>
+
+<!-- Preview navigation -->
+<div class="preview-nav">
+  <a href="index.html" class="active">Coach Form</a>
+  <a href="dashboard.html">Admin Dashboard</a>
+</div>
+
+<div class="header">
+  <div class="header-logo"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663356767696/ZPsMJTEeF9cNbnWWtGpFHU/WSC-logo-White-Full-Transparent_28ab6d43.png" alt="WSC"></div>
+  <div class="header-divider"></div>
+  <h1>Time Off Request</h1>
+</div>
+
+<div class="container" id="formContainer">
+
+  <div class="steps" role="progressbar" aria-label="Form progress">
+    <div class="step-bar active" id="step1"></div>
+    <div class="step-bar" id="step2"></div>
+    <div class="step-bar" id="step3"></div>
+  </div>
+
+  <div class="policy-callout">
+    <span class="policy-callout-icon">&#9432;</span>
+    <div>
+      <details>
+        <summary>Time-off policy &amp; notice requirements</summary>
+        <ul>
+          <li><strong>3+ days off</strong> &mdash; 3 weeks advance notice</li>
+          <li><strong>1&ndash;2 days off</strong> &mdash; 5 business days advance notice</li>
+          <li><strong>Blackout dates</strong> &mdash; First week of each season (Jan, Apr, Jul, Oct), National Championships, WSC major events</li>
+          <li><strong>Emergency</strong> &mdash; Notify leadership ASAP</li>
+          <li><strong>Sick leave</strong> &mdash; Report through Gusto</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <form id="timeOffForm" onsubmit="return false;" novalidate>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--primary-subtle);color:var(--primary);">&#128100;</div>
+        <div>
+          <div class="card-title">Who's requesting?</div>
+          <div class="card-subtitle">Select your name from the roster</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="required" for="coachName">Your name</label>
+        <select id="coachName" required>
+          <option value="">Choose your name...</option>
+        </select>
+      </div>
+      <div class="field" id="emailField" style="display:none;">
+        <label for="coachEmail">Confirmation email</label>
+        <input type="email" id="coachEmail" readonly>
+        <div class="field-hint">We'll send updates to this address</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--info-bg);color:var(--info);">&#128197;</div>
+        <div>
+          <div class="card-title">When are you away?</div>
+          <div class="card-subtitle">Select the first and last day you'll be out</div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:550;color:var(--text-secondary);">
+          <input type="checkbox" id="singleDayToggle" style="accent-color:var(--primary);"> Single day only
+        </label>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="required" for="startDate">First day out</label>
+          <input type="date" id="startDate" required>
+        </div>
+        <div class="field" id="endDateField">
+          <label class="required" for="endDate">Last day out</label>
+          <input type="date" id="endDate" required>
+        </div>
+      </div>
+      <div class="duration-chip" id="durationChip">
+        <span id="durationText"></span>
+      </div>
+      <div class="alert alert-warning mt-2" id="noticeWarning">
+        <span class="alert-icon">&#9888;</span>
+        <span id="noticeWarningText"></span>
+      </div>
+      <div class="field mt-4">
+        <label class="required" for="reason">Reason</label>
+        <input type="text" id="reason" required placeholder="Vacation, family event, personal day...">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:var(--accent-subtle);color:#8a7020;">&#128101;</div>
+        <div>
+          <div class="card-title">Coverage plan</div>
+          <div class="card-subtitle">Which classes need a sub while you're out?</div>
+        </div>
+      </div>
+      <div id="classesContainer"></div>
+      <button type="button" class="add-class-btn" id="addClassBtn">
+        <span style="font-size:18px;line-height:1;">+</span> Add another class
+      </button>
+      <div class="text-xs text-muted mt-2" id="classCounter"></div>
+    </div>
+
+    <div class="submit-area">
+      <button type="button" class="btn btn-primary btn-lg btn-block" id="submitBtn" onclick="submitForm()">
+        Submit time-off request
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- SUCCESS -->
+<div class="container result-page" id="successPage">
+  <div class="card">
+    <div class="result-icon result-icon-success">&#10003;</div>
+    <div class="result-title">Request submitted</div>
+    <div class="result-desc">Your request is pending approval from Luis. You'll get an email once it's reviewed.</div>
+    <div class="result-summary" id="successSummary"></div>
+    <button class="btn btn-ghost btn-block" onclick="location.reload()">Submit another request</button>
+  </div>
+</div>
+
+<!-- AUTO-DENIED -->
+<div class="container result-page" id="deniedPage">
+  <div class="card">
+    <div class="result-icon result-icon-denied">&#10007;</div>
+    <div class="result-title" style="color:var(--danger);">Automatically declined</div>
+    <div class="result-desc" id="denialReason"></div>
+    <div class="alert alert-info visible" style="text-align:left;margin-bottom:20px;">
+      <span class="alert-icon">&#9432;</span>
+      <span>If this is an emergency, contact <strong>Luis Lopez</strong> directly and he can override this.</span>
+    </div>
+    <button class="btn btn-ghost btn-block" onclick="location.reload()">Try different dates</button>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="overlay" id="loadingOverlay">
+  <div class="modal" style="text-align:center;max-width:320px;">
+    <div class="spinner" style="width:28px;height:28px;border-width:3px;color:var(--primary);margin:0 auto 14px;"></div>
+    <div style="font-weight:600;margin-bottom:4px;">Submitting your request</div>
+    <div class="text-sm text-muted">Checking policies, notifying subs...</div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// =========================================================
+// MOCK google.script.run for local preview
+// =========================================================
+var google = { script: { run: {} } };
+
+var MOCK_COACHES = [
+  { name: 'Gabe Decamps', email: 'gdecamps@woodinvillesportsclub.com' },
+  { name: 'Rebeka Stolmar', email: 'rstolmar@woodinvillesportsclub.com' },
+  { name: 'Connor Vordale', email: 'cvordale@woodinvillesportsclub.com' },
+  { name: 'Ben Bethards', email: 'bbethards@woodinvillesportsclub.com' },
+  { name: 'Max Kan', email: 'mkan@woodinvillesportsclub.com' },
+  { name: 'Vivek Ramesh', email: 'vramesh@woodinvillesportsclub.com' },
+  { name: 'Kevin Hsieh', email: 'khsieh@woodinvillesportsclub.com' },
+  { name: 'Mitch Stewart', email: 'mstewart@woodinvillesportsclub.com' },
+  { name: 'Bond Minard', email: 'bminard@woodinvillesportsclub.com' },
+  { name: 'Maddy Bourguignon', email: 'mbourguignon@woodinvillesportsclub.com' },
+  { name: 'Luis Lopez', email: 'llopez@woodinvillesportsclub.com' },
+  { name: 'Max Groysman', email: 'maximgroysman@gmail.com' },
+  { name: 'Jon Bair', email: 'jbair@woodinvillesportsclub.com' },
+  { name: 'Filipp Pogostkin', email: 'fpogostkin@woodinvillesportsclub.com' }
+];
+
+var MOCK_CLASSES = [
+  'Core Red', 'Core Orange', 'Core Green', 'Core Yellow',
+  'Foundations', 'Junior Prep', 'Tier 1 HS', 'JASA', 'ASA', 'FTA',
+  'Adult P&P', 'Adult T&L', 'Adult Small Group', 'Adult Intro',
+  'Adult Team Practice', 'Adult Shot Spotlight'
+];
+
+// Builder pattern mock for google.script.run
+function MockRunner() {
+  this._success = null;
+  this._failure = null;
+}
+MockRunner.prototype.withSuccessHandler = function(fn) { this._success = fn; return this; };
+MockRunner.prototype.withFailureHandler = function(fn) { this._failure = fn; return this; };
+MockRunner.prototype.getCoaches = function() {
+  var self = this;
+  setTimeout(function() { self._success(MOCK_COACHES); }, 150);
+};
+MockRunner.prototype.getClassOptions = function() {
+  var self = this;
+  setTimeout(function() { self._success(MOCK_CLASSES); }, 150);
+};
+MockRunner.prototype.checkSubConflictsForClient = function(subName, start, end) {
+  var self = this;
+  setTimeout(function() {
+    // Mock: Gabe always has a conflict for demo
+    if (subName === 'Gabe Decamps') {
+      self._success(['Gabe Decamps has a time-off request from 2026-04-15 to 2026-04-18']);
+    } else {
+      self._success([]);
+    }
+  }, 300);
+};
+MockRunner.prototype.getLoggedInCoach = function() {
+  var self = this;
+  setTimeout(function() {
+    // Mock: simulate logged-in as Filipp
+    self._success({ name: 'Filipp Pogostkin', email: 'fpogostkin@woodinvillesportsclub.com' });
+  }, 200);
+};
+MockRunner.prototype.processSubmission = function(formData) {
+  var self = this;
+  setTimeout(function() {
+    self._success({ success: true, responseId: 'mock-' + Date.now() });
+  }, 1500);
+};
+
+// Override google.script.run to return a new MockRunner each time
+Object.defineProperty(google.script, 'run', {
+  get: function() { return new MockRunner(); }
+});
+
+// =========================================================
+// APP LOGIC (same as CoachForm.html)
+// =========================================================
+var coaches = [];
+var classOptions = [];
+var classIdCounter = 0;
+var MAX_CLASSES = 16;
+
+google.script.run.withSuccessHandler(function(data) {
+  coaches = data;
+  var sel = document.getElementById('coachName');
+  data.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c.name; opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+  // Auto-detect logged-in coach
+  google.script.run.withSuccessHandler(function(coach) {
+    if (coach && coach.name) {
+      sel.value = coach.name;
+      sel.dispatchEvent(new Event('change'));
+    }
+  }).getLoggedInCoach();
+}).getCoaches();
+
+google.script.run.withSuccessHandler(function(data) {
+  classOptions = data;
+  addClassBlock(true);
+}).getClassOptions();
+
+document.getElementById('coachName').addEventListener('change', function() {
+  var name = this.value;
+  var emailField = document.getElementById('emailField');
+  var emailInput = document.getElementById('coachEmail');
+  if (name) {
+    var email = '';
+    coaches.forEach(function(c) { if (c.name === name) email = c.email; });
+    emailInput.value = email;
+    emailField.style.display = '';
+  } else {
+    emailField.style.display = 'none';
+    emailInput.value = '';
+  }
+  updateProgress();
+});
+
+document.getElementById('startDate').addEventListener('change', function() {
+  if (document.getElementById('singleDayToggle').checked) {
+    document.getElementById('endDate').value = this.value;
+  }
+  onDateChange();
+});
+document.getElementById('endDate').addEventListener('change', onDateChange);
+
+document.getElementById('singleDayToggle').addEventListener('change', function() {
+  var endField = document.getElementById('endDateField');
+  var endInput = document.getElementById('endDate');
+  var startVal = document.getElementById('startDate').value;
+  if (this.checked) {
+    if (startVal) endInput.value = startVal;
+    endField.style.display = 'none';
+  } else {
+    endField.style.display = '';
+  }
+  onDateChange();
+});
+
+function onDateChange() {
+  var startStr = document.getElementById('startDate').value;
+  var endStr = document.getElementById('endDate').value;
+  var chip = document.getElementById('durationChip');
+  var warn = document.getElementById('noticeWarning');
+  var warnText = document.getElementById('noticeWarningText');
+  chip.classList.remove('visible');
+  warn.classList.remove('visible');
+  if (!startStr) { updateProgress(); return; }
+  var start = new Date(startStr + 'T00:00:00');
+  var end = endStr ? new Date(endStr + 'T00:00:00') : start;
+  var now = new Date(); now.setHours(0,0,0,0);
+  if (endStr && end < start) {
+    warnText.textContent = 'Last day out can\'t be before your first day out.';
+    warn.classList.add('visible');
+    updateProgress(); return;
+  }
+  if (endStr) {
+    var days = Math.ceil((end - start) / 86400000) + 1;
+    var dayWord = days === 1 ? 'day' : 'days';
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var label = dayNames[start.getDay()] + ' ' + months[start.getMonth()] + ' ' + start.getDate();
+    if (days > 1) label += '  \u2192  ' + dayNames[end.getDay()] + ' ' + months[end.getMonth()] + ' ' + end.getDate();
+    document.getElementById('durationText').textContent = days + ' ' + dayWord + '  \u00B7  ' + label;
+    chip.classList.add('visible');
+    var calendarDays = Math.ceil((start - now) / 86400000);
+    if (days >= 3 && calendarDays < 21) {
+      warnText.textContent = 'Heads up \u2014 3+ day absences need 21 days notice. You\'re giving ' + calendarDays + ' days. This may be auto-declined.';
+      warn.classList.add('visible');
+    } else if (days < 3) {
+      var bizDays = countBizDays(now, start);
+      if (bizDays < 5) {
+        warnText.textContent = 'Heads up \u2014 1\u20132 day absences need 5 business days notice. You\'re giving ' + bizDays + '. This may be auto-declined.';
+        warn.classList.add('visible');
+      }
+    }
+  }
+  updateProgress();
+}
+
+function countBizDays(from, to) {
+  var count = 0; var d = new Date(from);
+  while (d < to) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) count++; }
+  return count;
+}
+
+function updateProgress() {
+  var s1 = document.getElementById('step1');
+  var s2 = document.getElementById('step2');
+  var s3 = document.getElementById('step3');
+  var hasCoach = !!document.getElementById('coachName').value;
+  var hasDates = !!document.getElementById('startDate').value && !!document.getElementById('endDate').value;
+  var hasClass = document.querySelector('.class-block select') && document.querySelector('.class-block select').value;
+  s1.className = 'step-bar ' + (hasCoach ? 'done' : 'active');
+  s2.className = 'step-bar ' + (hasDates ? 'done' : (hasCoach ? 'active' : ''));
+  s3.className = 'step-bar ' + (hasClass ? 'done' : (hasDates ? 'active' : ''));
+}
+
+function addClassBlock(isFirst) {
+  var total = document.querySelectorAll('.class-block').length;
+  if (total >= MAX_CLASSES) return;
+  classIdCounter++;
+  var idx = classIdCounter;
+  var num = total + 1;
+  var div = document.createElement('div');
+  div.className = 'class-block';
+  div.id = 'classBlock_' + idx;
+  div.setAttribute('data-idx', idx);
+  var reqLabel = isFirst ? ' class="required"' : '';
+  var reqAttr = isFirst ? ' required' : '';
+  div.innerHTML =
+    '<div class="class-block-header">' +
+      '<span class="class-block-num">Class ' + num + (isFirst ? ' (required)' : '') + '</span>' +
+      (isFirst ? '' : '<button type="button" class="class-remove" onclick="removeClassBlock(' + idx + ')" title="Remove">&times;</button>') +
+    '</div>' +
+    '<div class="field"><label' + reqLabel + '>Class</label><select id="className_' + idx + '"' + reqAttr + ' onchange="onClassChange(' + idx + ')"><option value="">Choose a class...</option></select></div>' +
+    '<div class="field"><label' + reqLabel + '>Day &amp; time</label><input type="text" id="classTime_' + idx + '" placeholder="e.g. Monday 4:00 PM, Wednesday 4:00 PM"><div class="field-hint">List each day this class meets during your absence</div></div>' +
+    '<div class="field"><label' + reqLabel + '>Substitute coach</label><select id="subName_' + idx + '" onchange="onSubChange(' + idx + ')"><option value="">Choose a sub...</option></select></div>' +
+    '<div class="field" id="subEmailField_' + idx + '" style="display:none;"><label class="required">Sub coach email</label><input type="email" id="subEmail_' + idx + '" placeholder="name@example.com"></div>' +
+    '<div class="alert alert-warning" id="subConflict_' + idx + '"><span class="alert-icon">&#9888;</span><span id="subConflictText_' + idx + '"></span></div>';
+  document.getElementById('classesContainer').appendChild(div);
+  var classSel = document.getElementById('className_' + idx);
+  classOptions.forEach(function(c) { var opt = document.createElement('option'); opt.value = c; opt.textContent = c; classSel.appendChild(opt); });
+  var subSel = document.getElementById('subName_' + idx);
+  coaches.forEach(function(c) { var opt = document.createElement('option'); opt.value = c.name; opt.textContent = c.name; subSel.appendChild(opt); });
+  var otherOpt = document.createElement('option'); otherOpt.value = 'Other (not listed)'; otherOpt.textContent = 'Other (not listed)'; subSel.appendChild(otherOpt);
+  updateClassCounter(); updateProgress();
+  if (!isFirst) setTimeout(function() { div.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+}
+
+function removeClassBlock(idx) {
+  var el = document.getElementById('classBlock_' + idx);
+  if (el) {
+    el.style.opacity = '0'; el.style.transform = 'scale(0.95)'; el.style.transition = 'all 0.2s ease';
+    setTimeout(function() { el.remove(); renumberClassBlocks(); updateClassCounter(); updateProgress(); }, 200);
+  }
+}
+
+function renumberClassBlocks() {
+  document.querySelectorAll('.class-block').forEach(function(b, i) {
+    var numEl = b.querySelector('.class-block-num');
+    if (numEl) numEl.textContent = 'Class ' + (i + 1) + (i === 0 ? ' (required)' : '');
+  });
+}
+
+function updateClassCounter() {
+  var total = document.querySelectorAll('.class-block').length;
+  document.getElementById('classCounter').textContent = total + ' of ' + MAX_CLASSES + ' classes added';
+  document.getElementById('addClassBtn').disabled = total >= MAX_CLASSES;
+}
+
+document.getElementById('addClassBtn').addEventListener('click', function() { addClassBlock(false); });
+
+function onClassChange(idx) {
+  var val = document.getElementById('className_' + idx).value;
+  var timeField = document.getElementById('classTime_' + idx);
+  var subField = document.getElementById('subName_' + idx);
+  if (val) { timeField.setAttribute('required', ''); subField.setAttribute('required', ''); }
+  else { timeField.removeAttribute('required'); subField.removeAttribute('required'); }
+  updateProgress();
+}
+
+function onSubChange(idx) {
+  var subName = document.getElementById('subName_' + idx).value;
+  var emailWrap = document.getElementById('subEmailField_' + idx);
+  var emailInput = document.getElementById('subEmail_' + idx);
+  var conflictEl = document.getElementById('subConflict_' + idx);
+  var conflictText = document.getElementById('subConflictText_' + idx);
+  if (subName === 'Other (not listed)') { emailWrap.style.display = ''; emailInput.setAttribute('required', ''); }
+  else { emailWrap.style.display = 'none'; emailInput.removeAttribute('required'); emailInput.value = ''; }
+  conflictEl.classList.remove('visible');
+  var startDate = document.getElementById('startDate').value;
+  var endDate = document.getElementById('endDate').value;
+  if (subName && subName !== 'Other (not listed)' && startDate && endDate) {
+    google.script.run.withSuccessHandler(function(conflicts) {
+      if (conflicts && conflicts.length > 0) { conflictText.textContent = conflicts.join('; '); conflictEl.classList.add('visible'); }
+    }).checkSubConflictsForClient(subName, startDate, endDate);
+  }
+}
+
+function submitForm() {
+  var form = document.getElementById('timeOffForm');
+  if (!form.reportValidity()) return;
+  var coachName = document.getElementById('coachName').value;
+  var coachEmail = document.getElementById('coachEmail').value;
+  var startDate = document.getElementById('startDate').value;
+  var endDate = document.getElementById('endDate').value;
+  var reason = document.getElementById('reason').value;
+  if (!coachName || !startDate || !endDate || !reason) { showToast('Please fill in all required fields.', 'error'); return; }
+  if (new Date(endDate + 'T00:00:00') < new Date(startDate + 'T00:00:00')) { showToast('Last day out can\'t be before first day out.', 'error'); return; }
+  var classes = [];
+  document.querySelectorAll('.class-block').forEach(function(block) {
+    var idx = block.getAttribute('data-idx');
+    var cn = document.getElementById('className_' + idx).value;
+    if (!cn) return;
+    var ct = document.getElementById('classTime_' + idx).value;
+    var sn = document.getElementById('subName_' + idx).value;
+    var se = sn === 'Other (not listed)' ? document.getElementById('subEmail_' + idx).value : '';
+    classes.push({ className: cn, classTime: ct, subName: sn, subEmail: se });
+  });
+  if (classes.length === 0) { showToast('Add at least one class that needs coverage.', 'error'); return; }
+  var formData = { coachName: coachName, coachEmail: coachEmail, startDate: startDate, endDate: endDate, reason: reason, classes: classes };
+  document.getElementById('loadingOverlay').classList.add('visible');
+  document.getElementById('submitBtn').disabled = true;
+  google.script.run.withSuccessHandler(function(result) {
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    document.getElementById('formContainer').style.display = 'none';
+    if (result.autoDenied) {
+      document.getElementById('denialReason').textContent = result.reason;
+      document.getElementById('deniedPage').classList.add('visible');
+    } else if (result.success) {
+      var html = '<dl>';
+      html += '<dt>Coach</dt><dd>' + esc(formData.coachName) + '</dd>';
+      html += '<dt>Dates</dt><dd>' + esc(formData.startDate) + ' to ' + esc(formData.endDate) + '</dd>';
+      html += '<dt>Reason</dt><dd>' + esc(formData.reason) + '</dd>';
+      html += '<dt>Coverage</dt><dd>';
+      classes.forEach(function(c, i) { if (i > 0) html += '<br>'; html += esc(c.className) + ' \u2192 ' + esc(c.subName); });
+      html += '</dd></dl>';
+      document.getElementById('successSummary').innerHTML = html;
+      document.getElementById('successPage').classList.add('visible');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }).withFailureHandler(function(err) {
+    document.getElementById('loadingOverlay').classList.remove('visible');
+    document.getElementById('submitBtn').disabled = false;
+    showToast('Something went wrong: ' + err.message, 'error');
+  }).processSubmission(formData);
+}
+
+function esc(str) { if (!str) return ''; var d = document.createElement('div'); d.textContent = String(str); return d.innerHTML; }
+
+function showToast(msg, type) {
+  var container = document.getElementById('toasts');
+  var toast = document.createElement('div');
+  toast.className = 'toast' + (type === 'error' ? ' toast-error' : type === 'success' ? ' toast-success' : '');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(function() { toast.style.opacity = '0'; toast.style.transform = 'translateY(8px)'; toast.style.transition = 'all 0.3s ease'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
+}
+</script>
+</body>
+</html>
