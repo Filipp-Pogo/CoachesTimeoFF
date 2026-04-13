@@ -10,7 +10,7 @@ var LUIS_EMAIL = 'Llopez@woodinvillesportsclub.com';
 var FILIPP_EMAIL = 'fpogostkin@woodinvillesportsclub.com';
 
 var COACHES = [
-  { name: 'Gabe Decamps',       email: 'gdecamps@woodinvillesportsclub.com' },
+  { name: 'Gabriel Decamps',    email: 'gdecamps@woodinvillesportsclub.com' },
   { name: 'Rebeka Stolmar',     email: 'rstolmar@woodinvillesportsclub.com' },
   { name: 'Connor Vordale',     email: 'cvordale@woodinvillesportsclub.com' },
   { name: 'Ben Bethards',       email: 'bbethards@woodinvillesportsclub.com' },
@@ -20,10 +20,18 @@ var COACHES = [
   { name: 'Mitch Stewart',      email: 'mstewart@woodinvillesportsclub.com' },
   { name: 'Bond Minard',        email: 'bminard@woodinvillesportsclub.com' },
   { name: 'Maddy Bourguignon',  email: 'mbourguignon@woodinvillesportsclub.com' },
-  { name: 'Luis Lopez',         email: 'llopez@woodinvillesportsclub.com' },
-  { name: 'Max Groysman',       email: 'maximgroysman@gmail.com' },
+  { name: 'Maxim Groysman',     email: 'maximgroysman@gmail.com' },
   { name: 'Jon Bair',           email: 'jbair@woodinvillesportsclub.com' },
-  { name: 'Filipp Pogostkin',   email: 'fpogostkin@woodinvillesportsclub.com' }
+  { name: 'Filipp Pogostkin',   email: 'fpogostkin@woodinvillesportsclub.com' },
+  { name: 'German Sanchez',     email: 'gsanchez@woodinvillesportsclub.com' },
+  { name: 'Alaina Kim',         email: 'akim@woodinvillesportsclub.com' },
+  { name: 'Oliver Wakeman',     email: 'owakeman@woodinvillesportsclub.com' },
+  { name: 'Zach Brooks',        email: 'zbrooks@woodinvillesportsclub.com' },
+  { name: 'Nirbhay Agarwal',    email: 'nagarwal@woodinvillesportsclub.com' },
+  { name: 'Liam Tsinker',       email: 'ltsinker@woodinvillesportsclub.com' },
+  { name: 'Stella Kim',         email: 'skim@woodinvillesportsclub.com' },
+  { name: 'Daniel Jarvie',      email: 'djarvie@woodinvillesportsclub.com' },
+  { name: 'Jackie S.',          email: 'jackies@woodinvillesportsclub.com' }
 ];
 
 var CLASS_OPTIONS = [
