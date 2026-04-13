@@ -4,7 +4,7 @@
 
 var SPREADSHEET_ID = '15_Mr-VN5oF2pJwXRew1F4mMRO0xg3cZnaOUFDEKPHTs';
 var APPROVALS_SHEET = 'Approvals Log';
-var WEBAPP_URL = 'PASTE_DEPLOYMENT_URL_HERE'; // Update after deploying
+var WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyfHxFTTF2KACoj2nT6n-KaY0E9mReUEwNJAJvNwoFtuGZ0orCcK6K8w-H6j2BcVodZ/exec';
 
 var LUIS_EMAIL = 'Llopez@woodinvillesportsclub.com';
 var FILIPP_EMAIL = 'fpogostkin@woodinvillesportsclub.com';

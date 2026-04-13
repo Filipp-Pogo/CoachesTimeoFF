@@ -1,0 +1,5 @@
+preview/**
+.git/**
+.claude/**
+.clasp.json
+.claspignore
