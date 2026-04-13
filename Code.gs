@@ -31,7 +31,8 @@ var COACHES = [
   { name: 'Liam Tsinker',       email: 'ltsinker@woodinvillesportsclub.com' },
   { name: 'Stella Kim',         email: 'skim@woodinvillesportsclub.com' },
   { name: 'Daniel Jarvie',      email: 'djarvie@woodinvillesportsclub.com' },
-  { name: 'Jackie S.',          email: 'jackies@woodinvillesportsclub.com' }
+  { name: 'Jackie S.',          email: 'jackies@woodinvillesportsclub.com' },
+  { name: 'Luis Lopez',         email: 'llopez@woodinvillesportsclub.com' }
 ];
 
 var CLASS_OPTIONS = [
