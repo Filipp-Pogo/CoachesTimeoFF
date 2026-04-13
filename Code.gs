@@ -135,8 +135,15 @@ function processSubmission(formData) {
     return { success: false, autoDenied: true, reason: disqualification.reason };
   }
 
-  // Check sub conflicts (non-blocking)
+  // Check sub conflicts (blocking — auto-deny if any sub has a conflict)
   var conflicts = checkSubConflicts_(classes, startDate, endDate);
+  if (conflicts.length > 0) {
+    var conflictReason = 'Coverage conflict: ' + conflicts.join('; ');
+    appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', conflictReason);
+    sendAutoDenialToCoach_(formData, conflictReason);
+    sendAutoDenialToLuis_(formData, conflictReason);
+    return { success: false, autoDenied: true, reason: conflictReason };
+  }
 
   // Write to Approvals Log
   appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'PENDING', '');
