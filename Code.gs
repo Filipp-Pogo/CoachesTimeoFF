@@ -326,17 +326,25 @@ function getApprovedAbsences_() {
 function getOrCreateApprovalsSheet_() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  if (sheet) {
+    // Check if headers match the new 10-column format
+    var firstRow = sheet.getRange(1, 1, 1, 10).getValues()[0];
+    if (String(firstRow[6]) !== 'Reason') {
+      // Old format — rename old sheet and create fresh one
+      sheet.setName('Approvals Log (old)');
+      sheet = null;
+    }
+  }
   if (!sheet) {
     sheet = ss.insertSheet(APPROVALS_SHEET);
     sheet.appendRow(['Timestamp', 'Response ID', 'Coach Name', 'Coach Email', 'Start Date', 'End Date', 'Reason', 'Classes/Coverage', 'Status', 'Notes']);
     sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
     sheet.setFrozenRows(1);
-    // Auto-size columns
-    sheet.setColumnWidth(1, 160);  // Timestamp
-    sheet.setColumnWidth(7, 200);  // Reason
-    sheet.setColumnWidth(8, 350);  // Classes/Coverage
-    sheet.setColumnWidth(9, 100);  // Status
-    sheet.setColumnWidth(10, 250); // Notes
+    sheet.setColumnWidth(1, 160);
+    sheet.setColumnWidth(7, 200);
+    sheet.setColumnWidth(8, 350);
+    sheet.setColumnWidth(9, 100);
+    sheet.setColumnWidth(10, 250);
   }
   return sheet;
 }
@@ -353,9 +361,15 @@ function formatClassesCoverage_(classes) {
 }
 
 function appendToApprovalsLog_(timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes, reason, classes) {
-  var sheet = getOrCreateApprovalsSheet_();
-  var coverageStr = formatClassesCoverage_(classes);
-  sheet.appendRow([timestamp, responseId, coachName, coachEmail, startDate, endDate, reason || '', coverageStr, status, notes]);
+  try {
+    var sheet = getOrCreateApprovalsSheet_();
+    var coverageStr = formatClassesCoverage_(classes);
+    sheet.appendRow([timestamp, responseId, coachName, coachEmail, startDate, endDate, reason || '', coverageStr, status, notes]);
+    SpreadsheetApp.flush();
+  } catch (e) {
+    Logger.log('ERROR writing to Approvals Log: ' + e.message);
+    throw e;
+  }
 }
 
 function updateApprovalLog(responseId, status, notes) {
