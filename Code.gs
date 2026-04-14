@@ -715,7 +715,7 @@ function getPendingRequests() {
     try {
       var data = JSON.parse(props[key]);
       var id = key.replace('response_', '');
-      if (statusMap[id] === 'PENDING') {
+      if (statusMap[id] === 'PENDING' || !statusMap[id]) {
         data.responseId = id;
         data.pendingHours = Math.round((new Date() - new Date(data.submittedAt)) / 3600000);
         pending.push(data);
@@ -775,15 +775,25 @@ function approveRequest(responseId) {
   var raw = PropertiesService.getScriptProperties().getProperty(propKey);
   if (!raw) return { success: false, error: 'Request not found or already processed' };
 
+  var data = JSON.parse(raw);
+
   // Check sheet status to prevent double-processing
   var currentStatus = getStatusFromSheet_(responseId);
-  if (currentStatus !== 'PENDING') {
+  if (currentStatus && currentStatus !== 'PENDING') {
     PropertiesService.getScriptProperties().deleteProperty(propKey);
-    return { success: false, error: 'Request already ' + (currentStatus || 'processed') };
+    return { success: false, error: 'Request already ' + currentStatus };
   }
 
-  var data = JSON.parse(raw);
-  updateApprovalLog(responseId, 'APPROVED', '');
+  // If row doesn't exist in sheet (submitted before sheet was created), insert it
+  if (!currentStatus) {
+    var classes = data.classes || [];
+    appendToApprovalsLog_(new Date(data.submittedAt), responseId, data.coachName, data.coachEmail,
+      new Date(data.startDate + 'T00:00:00'), new Date(data.endDate + 'T00:00:00'),
+      'APPROVED', '', data.reason, classes);
+  } else {
+    updateApprovalLog(responseId, 'APPROVED', '');
+  }
+
   sendApprovalToCoach_(data);
   sendCourtReserveUpdateToLuis_(data);
   PropertiesService.getScriptProperties().deleteProperty(propKey);
@@ -796,15 +806,25 @@ function denyRequest(responseId, reason) {
   var raw = PropertiesService.getScriptProperties().getProperty(propKey);
   if (!raw) return { success: false, error: 'Request not found or already processed' };
 
+  var data = JSON.parse(raw);
+
   // Check sheet status to prevent double-processing
   var currentStatus = getStatusFromSheet_(responseId);
-  if (currentStatus !== 'PENDING') {
+  if (currentStatus && currentStatus !== 'PENDING') {
     PropertiesService.getScriptProperties().deleteProperty(propKey);
-    return { success: false, error: 'Request already ' + (currentStatus || 'processed') };
+    return { success: false, error: 'Request already ' + currentStatus };
   }
 
-  var data = JSON.parse(raw);
-  updateApprovalLog(responseId, 'DENIED', reason);
+  // If row doesn't exist in sheet, insert it
+  if (!currentStatus) {
+    var classes = data.classes || [];
+    appendToApprovalsLog_(new Date(data.submittedAt), responseId, data.coachName, data.coachEmail,
+      new Date(data.startDate + 'T00:00:00'), new Date(data.endDate + 'T00:00:00'),
+      'DENIED', reason, data.reason, classes);
+  } else {
+    updateApprovalLog(responseId, 'DENIED', reason);
+  }
+
   sendDenialToCoach_(data, reason);
   sendDenialSummaryToLuis_(data, reason);
   PropertiesService.getScriptProperties().deleteProperty(propKey);
