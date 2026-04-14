@@ -203,9 +203,9 @@ function checkAutoDisqualification_(startDate, endDate, now) {
       return { reason: 'Insufficient notice for 3+ day absence. Required: ' + NOTICE_MULTI_DAY + ' calendar days. Provided: ' + calendarDays + ' days.' };
     }
   } else {
-    var bizDays = countBusinessDays_(now, startDate);
-    if (bizDays < NOTICE_SHORT) {
-      return { reason: 'Insufficient notice for 1-2 day absence. Required: ' + NOTICE_SHORT + ' business days. Provided: ' + bizDays + ' business days.' };
+    var calDays = Math.ceil((startDate - now) / 86400000);
+    if (calDays < NOTICE_SHORT) {
+      return { reason: 'Insufficient notice for 1-2 day absence. Required: ' + NOTICE_SHORT + ' days. Provided: ' + calDays + ' days.' };
     }
   }
 
@@ -517,7 +517,7 @@ function sendCoachConfirmation_(formData) {
 
   body += 'REMINDERS:\n' +
     '- 3+ day requests require 3 weeks advance notice\n' +
-    '- 1-2 day requests require 5 business days advance notice\n' +
+    '- 1-2 day requests require 5 days advance notice\n' +
     '- Emergency situations: notify leadership ASAP\n' +
     '- Sick leave must be reported through Gusto\n\n' +
     'You will receive an email once your request is approved or denied.' +
@@ -577,7 +577,7 @@ function sendAutoDenialToCoach_(formData, reason) {
     '━━━━━━━━━━━━━━━━━\n\n' +
     'POLICY REMINDERS:\n' +
     '- 3+ day requests require 3 weeks advance notice\n' +
-    '- 1-2 day requests require 5 business days advance notice\n' +
+    '- 1-2 day requests require 5 days advance notice\n' +
     '- Blackout dates: First week of each season, National Championships, WSC major events\n' +
     '- Emergency situations: notify leadership ASAP\n\n' +
     'If this is an emergency, please contact Luis Lopez directly.' +
