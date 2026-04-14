@@ -675,23 +675,21 @@ function getPendingRequests() {
 }
 
 function getAllStatuses_() {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  var sheet = getOrCreateApprovalsSheet_();
   var data = sheet.getDataRange().getValues();
   var map = {};
   for (var i = 1; i < data.length; i++) {
-    map[String(data[i][1])] = String(data[i][6]);
+    map[String(data[i][1])] = String(data[i][8]);
   }
   return map;
 }
 
 function getRecentHistory() {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  var sheet = getOrCreateApprovalsSheet_();
   var data = sheet.getDataRange().getValues();
   var history = [];
   for (var i = data.length - 1; i >= 1; i--) {
-    var status = String(data[i][6]);
+    var status = String(data[i][8]);
     if (status !== 'PENDING') {
       history.push({
         timestamp: data[i][0],
@@ -701,7 +699,7 @@ function getRecentHistory() {
         startDate: data[i][4],
         endDate: data[i][5],
         status: status,
-        notes: data[i][7]
+        notes: data[i][9]
       });
     }
     if (history.length >= 30) break;
@@ -710,12 +708,11 @@ function getRecentHistory() {
 }
 
 function getStatusFromSheet_(responseId) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  var sheet = getOrCreateApprovalsSheet_();
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][1]) === String(responseId)) {
-      return String(data[i][6]);
+      return String(data[i][8]);
     }
   }
   return null;
