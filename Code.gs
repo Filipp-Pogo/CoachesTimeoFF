@@ -138,7 +138,7 @@ function processSubmission(formData) {
   // Check auto-disqualification
   var disqualification = checkAutoDisqualification_(startDate, endDate, now);
   if (disqualification) {
-    appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', disqualification.reason);
+    appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', disqualification.reason, formData.reason, classes);
     sendAutoDenialToCoach_(formData, disqualification.reason);
     sendAutoDenialToLuis_(formData, disqualification.reason);
     return { success: false, autoDenied: true, reason: disqualification.reason };
@@ -148,14 +148,14 @@ function processSubmission(formData) {
   var conflicts = checkSubConflicts_(classes, startDate, endDate);
   if (conflicts.length > 0) {
     var conflictReason = 'Coverage conflict: ' + conflicts.join('; ');
-    appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', conflictReason);
+    appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', conflictReason, formData.reason, classes);
     sendAutoDenialToCoach_(formData, conflictReason);
     sendAutoDenialToLuis_(formData, conflictReason);
     return { success: false, autoDenied: true, reason: conflictReason };
   }
 
   // Write to Approvals Log
-  appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'PENDING', '');
+  appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'PENDING', '', formData.reason, classes);
 
   // Store in PropertiesService
   var stored = {
@@ -308,7 +308,7 @@ function getApprovedAbsences_() {
   var data = sheet.getDataRange().getValues();
   var results = [];
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][6]) === 'APPROVED') {
+    if (String(data[i][8]) === 'APPROVED') {
       results.push({
         coachName: String(data[i][2]),
         startDate: new Date(data[i][4]),
@@ -328,16 +328,34 @@ function getOrCreateApprovalsSheet_() {
   var sheet = ss.getSheetByName(APPROVALS_SHEET);
   if (!sheet) {
     sheet = ss.insertSheet(APPROVALS_SHEET);
-    sheet.appendRow(['Timestamp', 'Response ID', 'Coach Name', 'Coach Email', 'Start Date', 'End Date', 'Status', 'Notes']);
-    sheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+    sheet.appendRow(['Timestamp', 'Response ID', 'Coach Name', 'Coach Email', 'Start Date', 'End Date', 'Reason', 'Classes/Coverage', 'Status', 'Notes']);
+    sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
     sheet.setFrozenRows(1);
+    // Auto-size columns
+    sheet.setColumnWidth(1, 160);  // Timestamp
+    sheet.setColumnWidth(7, 200);  // Reason
+    sheet.setColumnWidth(8, 350);  // Classes/Coverage
+    sheet.setColumnWidth(9, 100);  // Status
+    sheet.setColumnWidth(10, 250); // Notes
   }
   return sheet;
 }
 
-function appendToApprovalsLog_(timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes) {
+function formatClassesCoverage_(classes) {
+  if (!classes || classes.length === 0) return '';
+  var lines = [];
+  for (var i = 0; i < classes.length; i++) {
+    var c = classes[i];
+    var sub = c.subName || 'No sub assigned';
+    lines.push(c.className + ' → ' + sub);
+  }
+  return lines.join(', ');
+}
+
+function appendToApprovalsLog_(timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes, reason, classes) {
   var sheet = getOrCreateApprovalsSheet_();
-  sheet.appendRow([timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes]);
+  var coverageStr = formatClassesCoverage_(classes);
+  sheet.appendRow([timestamp, responseId, coachName, coachEmail, startDate, endDate, reason || '', coverageStr, status, notes]);
 }
 
 function updateApprovalLog(responseId, status, notes) {
@@ -345,8 +363,8 @@ function updateApprovalLog(responseId, status, notes) {
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][1]) === String(responseId)) {
-      sheet.getRange(i + 1, 7).setValue(status);
-      sheet.getRange(i + 1, 8).setValue(notes);
+      sheet.getRange(i + 1, 9).setValue(status);
+      sheet.getRange(i + 1, 10).setValue(notes);
       return true;
     }
   }
