@@ -212,20 +212,6 @@ function checkAutoDisqualification_(startDate, endDate, now) {
   return null;
 }
 
-function countBusinessDays_(from, to) {
-  var count = 0;
-  var d = new Date(from);
-  d.setHours(0, 0, 0, 0);
-  var target = new Date(to);
-  target.setHours(0, 0, 0, 0);
-  while (d < target) {
-    d.setDate(d.getDate() + 1);
-    var day = d.getDay();
-    if (day !== 0 && day !== 6) count++;
-  }
-  return count;
-}
-
 // ============================================================
 // SUB CONFLICT CHECK
 // ============================================================
