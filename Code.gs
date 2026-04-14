@@ -651,6 +651,30 @@ function sendDenialSummaryToLuis_(data, reason) {
 // DASHBOARD ACTIONS (called from Dashboard.html)
 // ============================================================
 
+function getApprovedRequests() {
+  var sheet = getOrCreateApprovalsSheet_();
+  var data = sheet.getDataRange().getValues();
+  var results = [];
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][8]) === 'APPROVED') {
+      results.push({
+        timestamp: data[i][0],
+        coachName: String(data[i][2]),
+        startDate: data[i][4],
+        endDate: data[i][5],
+        reason: String(data[i][6]),
+        coverage: String(data[i][7])
+      });
+    }
+  }
+  results.sort(function(a, b) {
+    var da = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
+    var db = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
+    return da - db;
+  });
+  return results;
+}
+
 function getPendingRequests() {
   var props = PropertiesService.getScriptProperties().getProperties();
 

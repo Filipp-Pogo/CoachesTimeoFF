@@ -215,6 +215,48 @@
     .status-auto-denied { background: #fff4ec; color: #c44; }
     .status-pending    { background: var(--info-bg); color: var(--info); }
 
+    /* ---- APPROVED COVERAGE TABLE ---- */
+    .approved-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .approved-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border-light);
+    }
+    .approved-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    .approved-table tr:last-child td { border-bottom: none; }
+    .approved-table tr:hover td { background: var(--bg); }
+    .approved-coach { font-weight: 600; white-space: nowrap; }
+    .approved-dates { color: var(--text-secondary); white-space: nowrap; }
+    .approved-coverage-cell { line-height: 1.6; }
+    .coverage-chip {
+      display: inline-block;
+      background: var(--primary-subtle);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin: 2px 4px 2px 0;
+    }
+    .coverage-sub-name {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+    .approved-past td { opacity: 0.5; }
+
     /* ---- LOADING ---- */
     .loading-state {
       text-align: center;
@@ -309,6 +351,22 @@
       <div>Loading requests...</div>
     </div>
     <div id="pendingList"></div>
+  </div>
+
+  <!-- APPROVED COVERAGE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:var(--success-bg);color:#047857;">&#10003;</div>
+      <div style="flex:1;">
+        <div class="card-title">Approved Coverage</div>
+        <div class="card-subtitle">Approved time off with coverage details for Court Reserve updates</div>
+      </div>
+    </div>
+    <div id="approvedLoading" class="loading-state" style="padding:24px;">
+      <div class="loading-spinner"></div>
+      Loading...
+    </div>
+    <div id="approvedList"></div>
   </div>
 
   <!-- HISTORY -->
@@ -419,7 +477,8 @@ var refreshInterval = null;
 
 function initDashboard() {
   loadPending();
-  refreshInterval = setInterval(function() { refreshPending(); }, 5 * 60 * 1000);
+  loadApproved();
+  refreshInterval = setInterval(function() { refreshPending(); loadApproved(); }, 5 * 60 * 1000);
 }
 
 function refreshPending() {
@@ -643,6 +702,76 @@ function animateCardOut(id) {
       }
     }, 350);
   }
+}
+
+// =========================================================
+// APPROVED COVERAGE
+// =========================================================
+function loadApproved() {
+  google.script.run
+    .withSuccessHandler(renderApproved)
+    .withFailureHandler(function(e) {
+      document.getElementById('approvedLoading').innerHTML =
+        '<div style="color:var(--danger);font-size:13px;padding:12px;">Failed to load: ' + esc(e.message) + '</div>';
+    })
+    .getApprovedRequests();
+}
+
+function renderApproved(data) {
+  document.getElementById('approvedLoading').style.display = 'none';
+  var list = document.getElementById('approvedList');
+
+  if (!data || data.length === 0) {
+    list.innerHTML =
+      '<div class="empty-state" style="padding:24px;">' +
+        '<div class="empty-state-desc">No approved requests yet</div>' +
+      '</div>';
+    return;
+  }
+
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  var html = '<table class="approved-table">';
+  html += '<thead><tr>';
+  html += '<th>Coach</th>';
+  html += '<th>Dates</th>';
+  html += '<th>Coverage (Class &rarr; Sub)</th>';
+  html += '</tr></thead><tbody>';
+
+  data.forEach(function(r) {
+    var start = r.startDate instanceof Date ? r.startDate : new Date(r.startDate);
+    var end = r.endDate instanceof Date ? r.endDate : new Date(r.endDate);
+    var isPast = end < today;
+    var startStr = fmtDate(start);
+    var endStr = fmtDate(end);
+
+    // Parse coverage string "Class → Sub, Class → Sub"
+    var coverageHtml = '';
+    if (r.coverage) {
+      var pairs = r.coverage.split(', ');
+      pairs.forEach(function(pair) {
+        var parts = pair.split(' → ');
+        if (parts.length === 2) {
+          coverageHtml += '<span class="coverage-chip">' + esc(parts[0]) + '</span>';
+          coverageHtml += '<span class="coverage-sub-name">&rarr; ' + esc(parts[1]) + '</span> ';
+        } else {
+          coverageHtml += esc(pair) + ' ';
+        }
+      });
+    } else {
+      coverageHtml = '<span class="text-muted">No coverage info</span>';
+    }
+
+    html += '<tr class="' + (isPast ? 'approved-past' : '') + '">';
+    html += '<td class="approved-coach">' + esc(r.coachName) + '</td>';
+    html += '<td class="approved-dates">' + esc(startStr) + ' &ndash; ' + esc(endStr) + '</td>';
+    html += '<td class="approved-coverage-cell">' + coverageHtml + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  list.innerHTML = html;
 }
 
 // =========================================================
