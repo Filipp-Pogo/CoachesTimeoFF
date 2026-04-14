@@ -346,7 +346,35 @@ function getOrCreateApprovalsSheet_() {
     sheet.setColumnWidth(9, 100);
     sheet.setColumnWidth(10, 250);
   }
+  migrateOldRows_(sheet);
   return sheet;
+}
+
+function migrateOldRows_(sheet) {
+  var STATUSES = ['PENDING', 'APPROVED', 'DENIED', 'AUTO-DENIED'];
+  var data = sheet.getDataRange().getValues();
+  var migrated = 0;
+  for (var i = 1; i < data.length; i++) {
+    var oldStatus = String(data[i][6] || '').toUpperCase();
+    var newStatus = String(data[i][8] || '').toUpperCase();
+    // If column G (index 6) has a status value but column I (index 8) doesn't, it's an old-format row
+    if (STATUSES.indexOf(oldStatus) !== -1 && STATUSES.indexOf(newStatus) === -1) {
+      var row = i + 1;
+      var statusVal = data[i][6];
+      var notesVal = data[i][7] || '';
+      // Move status to column I, notes to column J
+      sheet.getRange(row, 9).setValue(statusVal);
+      sheet.getRange(row, 10).setValue(notesVal);
+      // Clear old columns G and H
+      sheet.getRange(row, 7).setValue('');
+      sheet.getRange(row, 8).setValue('');
+      migrated++;
+    }
+  }
+  if (migrated > 0) {
+    SpreadsheetApp.flush();
+    Logger.log('Migrated ' + migrated + ' old-format rows to 10-column layout');
+  }
 }
 
 function formatClassesCoverage_(classes) {
