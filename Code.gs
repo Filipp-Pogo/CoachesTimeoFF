@@ -304,8 +304,7 @@ function checkSubConflictsForClient(subName, startDateStr, endDateStr) {
 }
 
 function getApprovedAbsences_() {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  var sheet = getOrCreateApprovalsSheet_();
   var data = sheet.getDataRange().getValues();
   var results = [];
   for (var i = 1; i < data.length; i++) {
@@ -324,15 +323,25 @@ function getApprovedAbsences_() {
 // APPROVALS LOG
 // ============================================================
 
-function appendToApprovalsLog_(timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes) {
+function getOrCreateApprovalsSheet_() {
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(APPROVALS_SHEET);
+    sheet.appendRow(['Timestamp', 'Response ID', 'Coach Name', 'Coach Email', 'Start Date', 'End Date', 'Status', 'Notes']);
+    sheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function appendToApprovalsLog_(timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes) {
+  var sheet = getOrCreateApprovalsSheet_();
   sheet.appendRow([timestamp, responseId, coachName, coachEmail, startDate, endDate, status, notes]);
 }
 
 function updateApprovalLog(responseId, status, notes) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  var sheet = getOrCreateApprovalsSheet_();
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][1]) === String(responseId)) {
