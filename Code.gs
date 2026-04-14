@@ -680,27 +680,52 @@ function sendDenialSummaryToLuis_(data, reason) {
 // ============================================================
 
 function getApprovedRequests() {
-  var sheet = getOrCreateApprovalsSheet_();
-  var data = sheet.getDataRange().getValues();
-  var results = [];
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][8]) === 'APPROVED') {
-      results.push({
-        timestamp: data[i][0],
-        coachName: String(data[i][2]),
-        startDate: data[i][4],
-        endDate: data[i][5],
-        reason: String(data[i][6]),
-        coverage: String(data[i][7])
-      });
+  try {
+    var sheet = getOrCreateApprovalsSheet_();
+    var data = sheet.getDataRange().getValues();
+    var results = [];
+    for (var i = 1; i < data.length; i++) {
+      var status = String(data[i][8] || '').trim().toUpperCase();
+      if (status === 'APPROVED') {
+        var startDate = data[i][4];
+        var endDate = data[i][5];
+        results.push({
+          timestamp: String(data[i][0]),
+          coachName: String(data[i][2]),
+          startDate: startDate instanceof Date ? formatDate_(startDate) : String(startDate),
+          endDate: endDate instanceof Date ? formatDate_(endDate) : String(endDate),
+          reason: String(data[i][6] || ''),
+          coverage: String(data[i][7] || '')
+        });
+      }
     }
+    results.sort(function(a, b) {
+      return new Date(a.startDate) - new Date(b.startDate);
+    });
+    return results;
+  } catch (e) {
+    Logger.log('ERROR in getApprovedRequests: ' + e.message);
+    return [];
   }
-  results.sort(function(a, b) {
-    var da = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
-    var db = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
-    return da - db;
-  });
-  return results;
+}
+
+// Run this from the script editor to diagnose sheet issues
+function debugApprovalsLog() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName(APPROVALS_SHEET);
+  if (!sheet) {
+    Logger.log('ERROR: No sheet named "' + APPROVALS_SHEET + '"');
+    var sheets = ss.getSheets();
+    for (var s = 0; s < sheets.length; s++) {
+      Logger.log('  Found sheet: "' + sheets[s].getName() + '"');
+    }
+    return;
+  }
+  var data = sheet.getDataRange().getValues();
+  Logger.log('Sheet: ' + sheet.getName() + ' | Rows: ' + data.length + ' | Cols: ' + (data[0] ? data[0].length : 0));
+  for (var i = 0; i < data.length; i++) {
+    Logger.log('Row ' + (i+1) + ': ' + JSON.stringify(data[i]));
+  }
 }
 
 function getPendingRequests() {
@@ -741,17 +766,19 @@ function getRecentHistory() {
   var data = sheet.getDataRange().getValues();
   var history = [];
   for (var i = data.length - 1; i >= 1; i--) {
-    var status = String(data[i][8]);
-    if (status !== 'PENDING') {
+    var status = String(data[i][8] || '').trim();
+    if (status && status !== 'PENDING') {
+      var startDate = data[i][4];
+      var endDate = data[i][5];
       history.push({
-        timestamp: data[i][0],
-        responseId: data[i][1],
-        coachName: data[i][2],
-        coachEmail: data[i][3],
-        startDate: data[i][4],
-        endDate: data[i][5],
+        timestamp: String(data[i][0]),
+        responseId: String(data[i][1]),
+        coachName: String(data[i][2]),
+        coachEmail: String(data[i][3]),
+        startDate: startDate instanceof Date ? formatDate_(startDate) : String(startDate),
+        endDate: endDate instanceof Date ? formatDate_(endDate) : String(endDate),
         status: status,
-        notes: data[i][9]
+        notes: String(data[i][9] || '')
       });
     }
     if (history.length >= 30) break;
