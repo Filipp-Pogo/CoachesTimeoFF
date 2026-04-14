@@ -331,6 +331,15 @@ var isSubmitting = false;
 // =========================================================
 // INIT — load data from server
 // =========================================================
+var coachesReady = false;
+var classesReady = false;
+
+function tryInitForm() {
+  if (coachesReady && classesReady) {
+    addClassBlock(true);
+  }
+}
+
 google.script.run.withSuccessHandler(function(data) {
   coaches = data;
   var sel = document.getElementById('coachName');
@@ -340,6 +349,8 @@ google.script.run.withSuccessHandler(function(data) {
     opt.textContent = c.name;
     sel.appendChild(opt);
   });
+  coachesReady = true;
+  tryInitForm();
   // Auto-detect logged-in coach
   google.script.run.withSuccessHandler(function(coach) {
     if (coach && coach.name) {
@@ -351,7 +362,8 @@ google.script.run.withSuccessHandler(function(data) {
 
 google.script.run.withSuccessHandler(function(data) {
   classOptions = data;
-  addClassBlock(true);
+  classesReady = true;
+  tryInitForm();
 }).getClassOptions();
 
 // =========================================================
