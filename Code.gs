@@ -74,6 +74,10 @@ function doGet(e) {
     return handleLegacyDenyConfirm_(e.parameter.id, reason);
   }
 
+  if (action === 'override' && e.parameter.id) {
+    return handleOverride_(e.parameter.id);
+  }
+
   // Default: coach form
   return HtmlService.createTemplateFromFile('CoachForm')
     .evaluate()
@@ -139,8 +143,9 @@ function processSubmission(formData) {
   var disqualification = checkAutoDisqualification_(startDate, endDate, now);
   if (disqualification) {
     appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', disqualification.reason, formData.reason, classes);
+    storeAutoDeniedForOverride_(responseId, formData, classes, now, disqualification.reason);
     sendAutoDenialToCoach_(formData, disqualification.reason);
-    sendAutoDenialToLuis_(formData, disqualification.reason);
+    sendAutoDenialToLuis_(formData, responseId, classes, disqualification.reason);
     return { success: false, autoDenied: true, reason: disqualification.reason };
   }
 
@@ -149,8 +154,9 @@ function processSubmission(formData) {
   if (conflicts.length > 0) {
     var conflictReason = 'Coverage conflict: ' + conflicts.join('; ');
     appendToApprovalsLog_(now, responseId, formData.coachName, formData.coachEmail, startDate, endDate, 'AUTO-DENIED', conflictReason, formData.reason, classes);
+    storeAutoDeniedForOverride_(responseId, formData, classes, now, conflictReason);
     sendAutoDenialToCoach_(formData, conflictReason);
-    sendAutoDenialToLuis_(formData, conflictReason);
+    sendAutoDenialToLuis_(formData, responseId, classes, conflictReason);
     return { success: false, autoDenied: true, reason: conflictReason };
   }
 
@@ -571,17 +577,56 @@ function sendAutoDenialToCoach_(formData, reason) {
   MailApp.sendEmail(formData.coachEmail, subject, body);
 }
 
-function sendAutoDenialToLuis_(formData, reason) {
-  var subject = 'FYI — Auto-Denied Time Off: ' + formData.coachName;
-  var body = 'A time off request was automatically denied.\n\n' +
+function storeAutoDeniedForOverride_(responseId, formData, classes, now, denialReason) {
+  var stored = {
+    coachName: formData.coachName,
+    coachEmail: formData.coachEmail,
+    classes: classes,
+    startDate: formData.startDate,
+    endDate: formData.endDate,
+    reason: formData.reason,
+    submittedAt: now.toISOString(),
+    wasAutoDenied: true,
+    autoDenialReason: denialReason
+  };
+  PropertiesService.getScriptProperties().setProperty('autodenied_' + responseId, JSON.stringify(stored));
+}
+
+function sendAutoDenialToLuis_(formData, responseId, classes, reason) {
+  var subject = 'REVIEW — Auto-Denied Time Off: ' + formData.coachName;
+  var body = 'A time off request was automatically denied. The coach has been notified.\n\n' +
+    'You can review the details below and override if needed.\n\n' +
     '━━━━━━━━━━━━━━━━━\n' +
     'COACH: ' + formData.coachName + ' (' + formData.coachEmail + ')\n' +
     'DATES: ' + formData.startDate + ' to ' + formData.endDate + '\n' +
     'REASON FOR REQUEST: ' + formData.reason + '\n' +
     'DENIAL REASON: ' + reason + '\n' +
-    '━━━━━━━━━━━━━━━━━\n\n' +
-    'No action required unless this is an emergency override.' +
-    EMAIL_FOOTER;
+    '━━━━━━━━━━━━━━━━━\n\n';
+
+  if (classes && classes.length > 0) {
+    body += 'PROPOSED COVERAGE PLAN:\n';
+    for (var i = 0; i < classes.length; i++) {
+      var c = classes[i];
+      body += '\n  Class: ' + c.className + '\n';
+      body += '  Day & Time: ' + c.classTime + '\n';
+      body += '  Sub Coach: ' + c.subName + (c.subEmail ? ' (' + c.subEmail + ')' : '') + '\n';
+
+      var dates = getClassDates(formData.startDate, formData.endDate, c.classTime);
+      if (dates.length > 0) {
+        body += '  Specific dates:\n';
+        for (var d = 0; d < dates.length; d++) {
+          body += '    - ' + dates[d] + '\n';
+        }
+      }
+    }
+    body += '\n';
+  }
+
+  body += '━━━━━━━━━━━━━━━━━\n';
+  body += 'OVERRIDE & APPROVE: ' + WEBAPP_URL + '?action=override&id=' + responseId + '\n';
+  body += '\nIf you override, the coach will be notified the request was approved and you\'ll get a Court Reserve update email.\n';
+  body += '\nDashboard: ' + WEBAPP_URL + '?action=dashboard';
+  body += EMAIL_FOOTER;
   MailApp.sendEmail(LUIS_EMAIL, subject, body);
 }
 
@@ -895,6 +940,39 @@ function handleLegacyDenyConfirm_(responseId, reason) {
   }
   return HtmlService.createHtmlOutput(html)
     .setTitle('WSC — Denial Confirmed')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function handleOverride_(responseId) {
+  var propKey = 'autodenied_' + responseId;
+  var raw = PropertiesService.getScriptProperties().getProperty(propKey);
+  var html;
+  if (!raw) {
+    html = '<html><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
+      '<h2 style="color:#c0392b;">Override Not Available</h2>' +
+      '<p>This auto-denied request is no longer available for override (it may have already been overridden or expired).</p>' +
+      '<p><a href="' + WEBAPP_URL + '?action=dashboard">Go to Dashboard</a></p></body></html>';
+    return HtmlService.createHtmlOutput(html)
+      .setTitle('WSC — Override')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+
+  var data = JSON.parse(raw);
+  // Update sheet status from AUTO-DENIED to APPROVED
+  updateApprovalLog(responseId, 'APPROVED', 'Manually overridden by admin');
+  // Send approval emails as if this were a normal approval
+  sendApprovalToCoach_(data);
+  sendCourtReserveUpdateToLuis_(data);
+  // Clean up the autodenied entry
+  PropertiesService.getScriptProperties().deleteProperty(propKey);
+
+  html = '<html><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
+    '<h2 style="color:#1a5632;">Request Overridden &amp; Approved</h2>' +
+    '<p>' + data.coachName + '\'s time off request has been approved.</p>' +
+    '<p>The coach has been notified and a Court Reserve update email has been sent.</p>' +
+    '<p><a href="' + WEBAPP_URL + '?action=dashboard">Go to Dashboard</a></p></body></html>';
+  return HtmlService.createHtmlOutput(html)
+    .setTitle('WSC — Override Approved')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
