@@ -478,7 +478,18 @@ var refreshInterval = null;
 function initDashboard() {
   loadPending();
   loadApproved();
-  refreshInterval = setInterval(function() { refreshPending(); loadApproved(); }, 5 * 60 * 1000);
+  refreshInterval = setInterval(function() {
+    refreshPending();
+    loadApproved();
+    if (historyLoaded) reloadHistory();
+  }, 5 * 60 * 1000);
+}
+
+function reloadHistory() {
+  google.script.run
+    .withSuccessHandler(renderHistory)
+    .withFailureHandler(function() {})
+    .getRecentHistory();
 }
 
 function refreshPending() {
@@ -702,6 +713,9 @@ function animateCardOut(id) {
       }
     }, 350);
   }
+  // Refresh approved coverage and history so the just-actioned request shows up
+  loadApproved();
+  if (historyLoaded) reloadHistory();
 }
 
 // =========================================================

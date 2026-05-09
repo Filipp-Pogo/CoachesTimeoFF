@@ -186,7 +186,7 @@
         <summary>Time-off policy &amp; notice requirements</summary>
         <ul>
           <li><strong>3+ days off</strong> &mdash; 3 weeks advance notice</li>
-          <li><strong>1&ndash;2 days off</strong> &mdash; 5 business days advance notice</li>
+          <li><strong>1&ndash;2 days off</strong> &mdash; 5 days advance notice</li>
           <li><strong>Blackout dates</strong> &mdash; First week of each season (Jan, Apr, Jul, Oct), National Championships, WSC major events</li>
           <li><strong>Emergency</strong> &mdash; Notify leadership ASAP</li>
           <li><strong>Sick leave</strong> &mdash; Report through Gusto</li>
@@ -448,23 +448,21 @@ function onDateChange() {
     document.getElementById('durationText').textContent = days + ' ' + dayWord + '  \u00B7  ' + label;
     chip.classList.add('visible');
 
-    // Notice check
+    // Notice check (matches server: calendar days for both)
     var calendarDays = Math.ceil((start - now) / 86400000);
     if (days >= 3 && calendarDays < 21) {
       warnText.textContent = 'Heads up \u2014 3+ day absences need 21 days notice. You\'re giving ' + calendarDays + ' days. This may be auto-declined.';
       warn.classList.add('visible');
-    } else if (days < 3) {
-      var bizDays = countBizDays(now, start);
-      if (bizDays < 5) {
-        warnText.textContent = 'Heads up \u2014 1\u20132 day absences need 5 business days notice. You\'re giving ' + bizDays + '. This may be auto-declined.';
-        warn.classList.add('visible');
-      }
+    } else if (days < 3 && calendarDays < 5) {
+      warnText.textContent = 'Heads up \u2014 1\u20132 day absences need 5 days notice. You\'re giving ' + calendarDays + '. This may be auto-declined.';
+      warn.classList.add('visible');
     }
   }
   updateProgress();
 }
 
 function countBizDays(from, to) {
+  // Kept for reference, no longer used
   var count = 0;
   var d = new Date(from);
   while (d < to) {

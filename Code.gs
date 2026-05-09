@@ -903,6 +903,11 @@ function handleLegacyApprove_(responseId) {
       '<p>The coach has been notified and a Court Reserve update email has been sent.</p>' +
       '<p><a href="' + WEBAPP_URL + '?action=dashboard">Go to Dashboard</a></p></body></html>';
   } else {
+    // Check if this is an auto-denied request that can be overridden instead
+    var autoDeniedRaw = PropertiesService.getScriptProperties().getProperty('autodenied_' + responseId);
+    if (autoDeniedRaw) {
+      return handleOverride_(responseId);
+    }
     html = '<html><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
       '<h2 style="color:#c0392b;">Error</h2><p>' + result.error + '</p></body></html>';
   }
@@ -957,13 +962,23 @@ function handleOverride_(responseId) {
       .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
 
+  // Safety check: only override if current status is still AUTO-DENIED
+  var currentStatus = getStatusFromSheet_(responseId);
+  if (currentStatus && currentStatus !== 'AUTO-DENIED') {
+    PropertiesService.getScriptProperties().deleteProperty(propKey);
+    html = '<html><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
+      '<h2 style="color:#c0392b;">Cannot Override</h2>' +
+      '<p>This request is now <strong>' + currentStatus + '</strong>. Override only works for auto-denied requests.</p>' +
+      '<p><a href="' + WEBAPP_URL + '?action=dashboard">Go to Dashboard</a></p></body></html>';
+    return HtmlService.createHtmlOutput(html)
+      .setTitle('WSC — Override Not Allowed')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+
   var data = JSON.parse(raw);
-  // Update sheet status from AUTO-DENIED to APPROVED
   updateApprovalLog(responseId, 'APPROVED', 'Manually overridden by admin');
-  // Send approval emails as if this were a normal approval
   sendApprovalToCoach_(data);
   sendCourtReserveUpdateToLuis_(data);
-  // Clean up the autodenied entry
   PropertiesService.getScriptProperties().deleteProperty(propKey);
 
   html = '<html><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
@@ -985,6 +1000,17 @@ function checkPendingRequests() {
   var all = props.getProperties();
   var now = new Date();
   var statusMap = getAllStatuses_();
+
+  // Clean up auto-denied entries older than 60 days (override window expired)
+  for (var ak in all) {
+    if (ak.indexOf('autodenied_') !== 0) continue;
+    try {
+      var ad = JSON.parse(all[ak]);
+      var submitted = new Date(ad.submittedAt);
+      var ageDays = (now - submitted) / 86400000;
+      if (ageDays > 60) props.deleteProperty(ak);
+    } catch (e) {}
+  }
 
   for (var key in all) {
     if (key.indexOf('response_') !== 0) continue;
